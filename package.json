@@ -1,0 +1,16 @@
+{
+  "name": "nimaprepo",
+  "version": "1.0.0",
+  "description": "server side pagination",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app"
+  },
+  "author": "omkar tambe",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.0"
+  }
+}
