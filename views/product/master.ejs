@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <title><%= title%></title>
+    </head>
+    <body>
+        <h2><%= title%></h2>
+        <div class="row">
+            <form id="categoryForm" autocomplete="off">
+                <div class="col-md-3">
+                    <label for="">Category Name</label>
+                    <!-- <input type="number" name="categoryId" id="categoryId"/> -->
+                    <select name="categoryName" id="categoryName"></select>
+                </div>
+                <div class="col-md-3">
+                    <label for="">product Id</label>
+                    <input type="number" id="productId" name="productId"/>
+                </div>
+                <div class="col-md-3">
+                    <label for="">product Name</label>
+                    <input type="text" id="productName" name="productName"/>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" id="submitButton">Submit</button>
+                </div>
+                </form>
+        </div>
+        <div>
+            <table class="table table-striped" style="width: 50%;">
+                <thead>
+                    <tr>
+                        <th scope="col">Category Id</th>
+                        <th scope="col">Category Name</th>
+                        <th scope="col">Product Id</th>
+                        <th scope="col">Product Name</th>
+                    </tr>
+                </thead>
+                <tbody tbody id="tableBody">
+                        <tr >
+                            <td colspan="4" style="text-align: center;">No Data</td>
+                        </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+
+    <script>
+
+        /**
+         * desc  : function gets all data and binds data to table 
+         */
+        function showDataInTable(){
+            $.ajax({
+                url : '/route/product/getData',
+                type : 'GET',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success : function(result){
+                    if(result.data.length){
+                        var html = '';
+                        for(var i = 0 ; i < result.data.length; i++){
+                            html += `<tr>
+                                <th>${result.data[i].categoryData.categoryId}</th>
+                                <th>${result.data[i].categoryName}</th>
+                                <th><a href="javascript:void(0)" class="edit" data-id="${result.data[i]._id}">${result.data[i].productId}</a></th>
+                                <th><a href="javascript:void(0)" class="edit" data-id="${result.data[i]._id}">${result.data[i].productName}</a></th>
+                            </tr>`
+                        }
+                        $("#tableBody").html('');
+                        $("#tableBody").html(html);
+                    }
+                }
+            });
+        }
+
+        function getCategoryList(){
+            $.ajax({
+                url : '/route/category/categoryList',
+                type : 'GET',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success : function(result){
+                    if(result.data.length){
+                        var html = '';
+                        for(var i = 0 ; i < result.data.length; i++){
+                            html += `<option value="${result.data[i]}">${result.data[i]}</option>`
+                        }
+                        $("#categoryName").html('');
+                        $("#categoryName").html(html);
+                    }
+                }
+            });
+        }
+        
+        $(document).ready(function(){
+
+            var subId = "";
+            var method = "PUT";
+            showDataInTable();
+            getCategoryList()
+            $("#categoryForm").validate({
+                submitHandler : function(form){
+                    try{
+                        var formdata = {
+                            productId : $('#productId').val(),
+                            productName : $('#productName').val(),
+                            categoryName : $('#categoryName').val(),
+                        }
+                        var url = "/route/product/addData";
+                        alert(method);
+                        if(method == "POST"){
+                            url = "/route/product/update/"+subId;
+                        }
+                        $.ajax({
+                            url : url,
+                            type : method,
+                            data : JSON.stringify(formdata),
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success : function(result){
+                                alert("data saved");
+                                document.getElementById('categoryForm').reset();
+                                showDataInTable();
+                                subId = "";
+                                method = "PUT";
+                            }
+                        })
+                    }catch(e){
+                        console.log(e)
+                    }
+                }
+            });
+        
+            $(document).on("click", ".edit", function(){
+                var id = $(this).attr("data-id");
+                method = "POST"
+                subId = id
+                console.log(id);
+                $.ajax({
+                    url : "/route/product/getRecord/"+id,
+                    type : "GET",
+                    success : function(result){
+                        // result = JSON.stringify(result);
+                        console.log("result",result)
+                        $("#categoryId").val(result.data.categoryId);
+                        $("#categoryName").val(result.data.categoryName);
+                    }
+                })
+            });
+        });
+    </script>
+</html>
